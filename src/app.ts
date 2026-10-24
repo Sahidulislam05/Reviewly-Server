@@ -2,11 +2,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import { env } from "./config/env";
-import { errorHandler, notFound } from "./middlewares/errorHandler";
-import { globalLimiter } from "./middlewares/rateLimiters";
-import { authRouter } from "./modules/auth/auth.route";
-import { submissionRouter } from "./modules/submission/submission.route";
+import { env } from "./config/env.js";
+import { errorHandler, notFound } from "./middlewares/errorHandler.js";
+import { globalLimiter } from "./middlewares/rateLimiters.js";
+import { authRouter } from "./modules/auth/auth.route.js";
+import { submissionRouter } from "./modules/submission/submission.route.js";
 
 export const app = express();
 
@@ -17,7 +17,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 app.use(globalLimiter);
 
-app.get("/api/health", (_req, res) => {
+app.get("/", (_req, res) => {
   res.json({ success: true, message: "OK" });
 });
 app.use("/api/auth", authRouter);
