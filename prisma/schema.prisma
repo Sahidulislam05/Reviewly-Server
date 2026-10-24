@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  MENTOR
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  submissions Submission[] // as student (one-to-many)
+  feedbacks   Feedback[] // as mentor  (one-to-many)
+
+  @@map("users")
+}
+
+model Submission {
+  id                String           @id @default(cuid())
+  projectName       String
+  repoUrl           String // as typed by the student
+  repoUrlNormalized String           @unique // duplicate detection, enforced by the database
+  liveLink          String
+  description       String
+  status            SubmissionStatus @default(PENDING)
+  reviewedAt        DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  studentId String
+  student   User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feedbacks Feedback[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([studentId, createdAt(sort: Desc)])
+  @@map("submissions")
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  message   String
+  createdAt DateTime @default(now())
+
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  mentorId     String
+  mentor       User       @relation(fields: [mentorId], references: [id])
+
+  @@index([submissionId])
+  @@map("feedbacks")
+}
